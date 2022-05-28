@@ -3,6 +3,8 @@
 # Bucket Knight: River Adventures
 Bucket Knight: River Adventures is an endless rafting mobile game created in [Unity](https://unity.com/) by a team of interns at [Trollpants Game Studio](https://github.com/Trollpants) in 2015.
 
+<a href='https://play.google.com/store/apps/details?id=com.Trollpants.BucketKnight'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' height='auto' width='240px'/></a>
+
 ## Release History
 Bucket Knight: River Adventures was released on Google Play, Apple App Store and Amazon Appstore on May 13th, 2015.
 
