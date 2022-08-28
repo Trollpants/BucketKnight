@@ -19,6 +19,20 @@ namespace CloudOnce.Internal
             return (T)Convert(jsonObject, typeof(T));
         }
 
+        public static Dictionary<string, T> ConvertDictionary<T>(JSONObject jsonObject)
+            where T : IJsonDeserializable, new()
+        {
+            var dictionary = new Dictionary<string, T>();
+            foreach (var key in jsonObject.Keys)
+            {
+                var value = new T();
+                value.FromJSONObject(jsonObject[key]);
+                dictionary.Add(key, value);
+            }
+
+            return dictionary;
+        }
+
         public static JSONObject ToJsonObject<T>(Dictionary<string, T> serializableDictionary)
             where T : IJsonSerializable
         {

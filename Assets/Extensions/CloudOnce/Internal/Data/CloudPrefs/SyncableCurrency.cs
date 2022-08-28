@@ -93,11 +93,17 @@ namespace CloudOnce.Internal
         /// <param name="jsonObject"><see cref="JSONObject"/> containing the currency data.</param>
         public void FromJSONObject(JSONObject jsonObject)
         {
-            var idAlias = CloudOnceUtils.GetAlias(typeof(SyncableCurrency).Name, jsonObject, aliasCurrencyID, oldAliasCurrencyID);
-            var dataAlias = CloudOnceUtils.GetAlias(typeof(SyncableCurrency).Name, jsonObject, aliasCurrencyData, oldAliasCurrencyData);
+            if (jsonObject.HasFields("c", "a", "s"))
+            {
+                ParseLegacyCurrencyData(jsonObject);
+                return;
+            }
+
+            var idAlias = CloudOnceUtils.GetAlias(nameof(SyncableCurrency), jsonObject, aliasCurrencyID, oldAliasCurrencyID);
+            var dataAlias = CloudOnceUtils.GetAlias(nameof(SyncableCurrency), jsonObject, aliasCurrencyData, oldAliasCurrencyData);
 
             CurrencyID = jsonObject[idAlias].String;
-            DeviceCurrencyValues = JsonHelper.Convert<Dictionary<string, CurrencyValue>>(jsonObject[dataAlias]);
+            DeviceCurrencyValues = JsonHelper.ConvertDictionary<CurrencyValue>(jsonObject[dataAlias]);
         }
 
         /// <summary>
@@ -128,8 +134,7 @@ namespace CloudOnce.Internal
                 foreach (var device in otherData.DeviceCurrencyValues)
                 {
                     // Is the device listed in the currency data dictionary?
-                    CurrencyValue localCurrencyData;
-                    if (DeviceCurrencyValues.TryGetValue(device.Key, out localCurrencyData))
+                    if (DeviceCurrencyValues.TryGetValue(device.Key, out var localCurrencyData))
                     {
                         // If the additions in the other data is larger, update the local additions
                         if (device.Value.Additions > localCurrencyData.Additions)
@@ -170,5 +175,47 @@ namespace CloudOnce.Internal
         }
 
         #endregion /Public methods
+
+        private void ParseLegacyCurrencyData(JSONObject jsonObject)
+        {
+            CurrencyID = jsonObject["c"].String;
+            var additions = JsonHelper.ConvertDictionary<LegacyCurrencyValue>(jsonObject["a"]);
+            var subtractions = JsonHelper.ConvertDictionary<LegacyCurrencyValue>(jsonObject["s"]);
+            var values = new Dictionary<string, CurrencyValue>();
+            foreach (var (deviceId, legacyValue) in additions)
+            {
+                if (!values.TryGetValue(deviceId, out var currencyValue))
+                {
+                    currencyValue = new CurrencyValue();
+                    values[deviceId] = currencyValue;
+                }
+
+                currencyValue.Additions += legacyValue.Value;
+            }
+
+            foreach (var (deviceId, legacyValue) in subtractions)
+            {
+                if (!values.TryGetValue(deviceId, out var currencyValue))
+                {
+                    currencyValue = new CurrencyValue();
+                    values[deviceId] = currencyValue;
+                }
+
+                currencyValue.Subtractions += legacyValue.Value;
+            }
+
+            DeviceCurrencyValues = values;
+        }
+
+        // ReSharper disable once ClassNeverInstantiated.Local
+        private class LegacyCurrencyValue : IJsonDeserializable
+        {
+            public float Value { get; private set; }
+
+            public void FromJSONObject(JSONObject jsonObject)
+            {
+                Value = jsonObject["v"].F;
+            }
+        }
     }
 }
