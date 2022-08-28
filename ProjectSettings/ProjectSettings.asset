@@ -253,8 +253,8 @@ PlayerSettings:
   AndroidTargetDevices: 0
   AndroidSplashScreenScale: 0
   androidSplashScreen: {fileID: 0}
-  AndroidKeystoreName: F:/Perforce/Resources/Keystores/riveradventures.keystore
-  AndroidKeyaliasName: riveradventures
+  AndroidKeystoreName: '{dedicated}: trollpants.keystore'
+  AndroidKeyaliasName: trollpants-dev
   AndroidBuildApkPerCpuArchitecture: 0
   AndroidTVCompatibility: 1
   AndroidIsGame: 1
