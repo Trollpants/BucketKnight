@@ -9,22 +9,22 @@ namespace BucketKnight
 {
     using CloudOnce;
     using DG.Tweening;
+    using DG.Tweening.Core;
+    using DG.Tweening.Plugins.Options;
     using UnityEngine;
     using UnityEngine.SceneManagement;
     using UnityEngine.UI;
 
     public class InGameMenuManager : MenuManager
     {
-        private const int c_fontDefaultSize = 26;
-        private const float c_secondsBeforeEachRewardedAd = 180f;
         private float _startTime;
+        private TweenerCore<Color, Color, ColorOptions> blackFadeTweener;
 
         public Canvas inGameMenu;
         public Canvas pauseMenu;
         public Canvas gameOverMenu;
-        //public RectTransform gameOverPanel;
         public Image BlackFadeImage;
-
+        
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -161,30 +161,6 @@ namespace BucketKnight
 
             ToggleBlackFade(true);
 
-            //if (SavedData.SecondsPlayedSinceLastAd > c_secondsBeforeEachRewardedAd)
-            //{
-            //    Debug.Log(string.Format("Over {0} seconds since last ad was watched, showing rewarded ad button.", c_secondsBeforeEachRewardedAd));
-            //    adsPanel.gameObject.SetActive(true);
-            //    adsCanvasGroup.interactable = true;
-            //    adsCanvasGroup.blocksRaycasts = true;
-            //    adsCanvasGroup.alpha = 1f;
-            //    adsPanel.DOMoveX(365f, 1.1f)
-            //        .From(true)
-            //        .SetEase(Ease.OutElastic, 1.1f, 0f);
-            //    DOTween.ToAlpha(() => AdsButtonFlashImage.color, x => AdsButtonFlashImage.color = x, 0.47f, 0.5f)
-            //        .SetEase(Ease.InQuad)
-            //        .SetLoops(-1, LoopType.Yoyo);
-            //    DOTween.To(() => AdsText.fontSize, x => AdsText.fontSize = x, 32, 0.5f)
-            //        .SetEase(Ease.InQuad)
-            //        .SetLoops(-1, LoopType.Yoyo);
-            //    gameOverPanel.DOMoveX(-860f, 0.75f).From();
-            //}
-            //else
-            //{
-            //    adsPanel.gameObject.SetActive(false);
-            //    gameOverPanel.DOMoveX(-860f, 0.5f).From();
-            //}
-
             Cloud.Storage.Save();
         }
 
@@ -203,7 +179,10 @@ namespace BucketKnight
 
         private void ToggleBlackFade(bool fadeOn, float amount = 0.47f, float duration = 0.75f, Ease ease = Ease.OutQuint)
         {
-            DOTween.ToAlpha(() => BlackFadeImage.color, x => BlackFadeImage.color = x, fadeOn ? amount : 0f, duration).SetEase(ease);
+            blackFadeTweener?.Kill();
+            blackFadeTweener = DOTween.ToAlpha(() => BlackFadeImage.color, x => BlackFadeImage.color = x, fadeOn ? amount : 0f, duration)
+                                      .SetEase(ease)
+                                      .OnComplete(() => blackFadeTweener = null);
         }
 
         private void OnApplicationFocus(bool focused)
@@ -213,6 +192,11 @@ namespace BucketKnight
                 Events.instance.Raise(new GamePaused());
                 Events.instance.Raise(new EnterPauseMenu());
             }
+        }
+
+        private void OnDestroy()
+        {
+            blackFadeTweener?.Kill();
         }
 
         protected override void OnDisable()

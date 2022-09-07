@@ -8,6 +8,8 @@
 namespace BucketKnight
 {
     using DG.Tweening;
+    using DG.Tweening.Core;
+    using DG.Tweening.Plugins.Options;
     using UnityEngine;
     using UnityEngine.UI;
 
@@ -20,6 +22,7 @@ namespace BucketKnight
         #region Fields & properties
 
         private Image _image;
+        private TweenerCore<Color, Color, ColorOptions> tweener;
 
         #endregion /Fields & properties
 
@@ -38,13 +41,18 @@ namespace BucketKnight
                 .SetLoops(-1, LoopType.Yoyo);*/
         }
 
+        private void OnDestroy()
+        {
+            tweener?.Kill();
+        }
+
         #endregion /Unity methods
 
         private void OnTweenComplete()
         {
             var strength = Random.Range(0.8f, 1.1f);
             var duration = Random.Range(1f, 3f);
-            DOTween.ToAlpha(() => _image.color, x => _image.color = x, strength, duration)
+            tweener = DOTween.ToAlpha(() => _image.color, x => _image.color = x, strength, duration)
                 .SetEase(Ease.InOutBounce)
                 .SetLoops(1, LoopType.Yoyo)
                 .OnComplete(OnTweenComplete);

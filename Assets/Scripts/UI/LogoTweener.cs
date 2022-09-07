@@ -8,6 +8,8 @@
 namespace BucketKnight
 {
     using DG.Tweening;
+    using DG.Tweening.Core;
+    using DG.Tweening.Plugins.Options;
     using UnityEngine;
 
     /// <summary>
@@ -19,6 +21,8 @@ namespace BucketKnight
         #region Fields & properties
 
         private RectTransform _rectTransform;
+        private TweenerCore<Vector2, Vector2, VectorOptions> tweener1;
+        private TweenerCore<Quaternion, Vector3, QuaternionOptions> tweener2;
 
         #endregion /Fields & properties
 
@@ -36,11 +40,17 @@ namespace BucketKnight
 
         private void Start()
         {
-            DOTween.To(() => _rectTransform.anchoredPosition, x => _rectTransform.anchoredPosition = x, new Vector2(0, 32f), 3.5f)
+            tweener1 = DOTween.To(() => _rectTransform.anchoredPosition, x => _rectTransform.anchoredPosition = x, new Vector2(0, 32f), 3.5f)
                 .SetRelative(true)
                 .SetEase(Ease.InOutQuad)
                 .SetLoops(-1, LoopType.Yoyo);
-            _rectTransform.DORotate(new Vector3(0f, 0f, -1f), 2.25f).SetEase(Ease.InOutQuad).SetLoops(-1, LoopType.Yoyo);
+            tweener2 = _rectTransform.DORotate(new Vector3(0f, 0f, -1f), 2.25f).SetEase(Ease.InOutQuad).SetLoops(-1, LoopType.Yoyo);
+        }
+
+        private void OnDestroy()
+        {
+            tweener1?.Kill();
+            tweener2?.Kill();
         }
 
         #endregion /Unity methods
